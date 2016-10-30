@@ -12,18 +12,9 @@
 
 #ifndef _DS_MATRIX_
 #define _DS_MATRIX_
-#define _DS_MATRIX_VERSION "v.1.0.0"
+#define _DS_MATRIX_VERSION "v.1.1.0 alpha"
+#define SUPPORT_ERASE false
 
-/*
- * Version "v.x.y.z" means:
- *  - x changes when we rewrite all code or almost all code
- *      or there are important changes in structure of our template;
- *  - y changes when we add new or remove old methods or make a lot 
- *      of changes in body of some method or make some 
- *      changes in structure of our template;
- *  - z changes when we fix some bugs or make some little changes in
- *      code.
- */
 
 namespace DS {
 
@@ -31,30 +22,50 @@ namespace DS {
 #define ONE static_cast<T>(1)
 #define DEFAULT_EPS static_cast<T>(0.00001)
 
+#if SUPPORT_ERASE
+#define DEFAULT_AREA_KOEF_FOR_RESIZE 0.75
+#endif
+
+	enum ROW_COL {
+		ROW, COLUMN
+	};
+
 	template <class T>
 	class Matrix
 	{
-	public:
-		enum ROW_COL {
-			ROW, COLUMN
-		};
-
 	protected:
 		size_t rows;
 		size_t cols;
 		T ** data;
 
 	private:
+#if SUPPORT_ERASE
+		double areaKoefForResize;
+#endif
 		T eps;
 
 	protected:
 		T** copyData() const;
 		void destroy();
 
-		static T ** create_array(size_t n, size_t m);
-		static T ** create_array(size_t n, size_t m, const T& val);
-		static T ** create_array(size_t n, size_t m, const T** matrix);
-		static T ** create_array(size_t n, const T* array_in, ROW_COL row_col = ROW_COL::COLUMN);
+		static T ** create_array_by_size(size_t n, size_t m);
+		static T ** create_array_with_val(size_t n, size_t m, const T& val);
+		static T ** create_array_by_two_dim_array(size_t n, size_t m, const T* const * matrix);
+		static T ** create_array_by_array(size_t n, const T* array_in, ROW_COL row_col = ROW_COL::COLUMN);
+#ifdef _VECTOR_
+		static T ** create_array_by_std_vector_vector(size_t n, size_t m, const std::vector<std::vector<T>>& matrix);
+		static T ** create_array_by_std_vector(size_t n, const std::vector<T>& vector_in, ROW_COL row_col = ROW_COL::COLUMN);
+#endif
+
+		template <size_t n, size_t m>
+		static T ** create_array_by_two_dim_array(const T (&matrix)[n][m]);
+
+		//template <class T>
+		struct MatrixData {
+			size_t rows;
+			size_t cols;
+			T ** data;
+		};
 
 	public:
 
@@ -85,6 +96,8 @@ namespace DS {
 			iterator& operator-=(size_t i);
 			T& operator*();
 			const T& operator*() const;
+			T& operator->();
+			const T& operator->() const;
 		};
 
 		class const_iterator {
@@ -114,19 +127,31 @@ namespace DS {
 			const_iterator& operator+=(size_t i);
 			const_iterator& operator-=(size_t i);
 			const T& operator*() const;
+			const T& operator->() const;
 		};
 
 		Matrix();
 		Matrix(size_t n, size_t m);
 		Matrix(size_t n);
-		Matrix(size_t n, size_t m, const T& val);
-		Matrix(const T** matrix, size_t n, size_t m);
-		Matrix(const T* matrix, size_t n, ROW_COL row_col = ROW_COL::COLUMN);
-#ifdef _VECTOR_
-		Matrix(const std::vector<T>& vector_, ROW_COL row_col = ROW_COL::COLUMN);
-#endif // _VECTOR_
 		Matrix(const Matrix& matrix);
+		Matrix(const MatrixData& matrixData);
+#ifdef _VECTOR_
+		explicit Matrix(const std::vector<T>& vector_);
+		explicit Matrix(const std::vector<std::vector<T>>& vector_);
+#endif // _VECTOR_
 		virtual ~Matrix();
+
+		static MatrixData matrixWithValue(size_t n, size_t m, const T& val);
+		static MatrixData vectorWithValue(size_t n, const T& val);
+		static MatrixData matrixByArray(const T* const * matrix, size_t n, size_t m);
+		static MatrixData vectorByArray(const T* matrix, size_t n, ROW_COL row_col = ROW_COL::COLUMN);
+#ifdef _VECTOR_
+		static MatrixData matrixByStdVector(const std::vector<T>& vector_, ROW_COL row_col = ROW_COL::COLUMN);
+		static MatrixData matrixByStdVectorVector(const std::vector<std::vector<T>>& vector_);
+#endif // _VECTOR_
+
+		template <size_t n, size_t m>
+		static MatrixData matrixByArray(const T (&matrix)[n][m]);
 
 		void resize(size_t n, size_t m);
 		void resize(size_t n, size_t m, const T& val);
@@ -139,14 +164,30 @@ namespace DS {
 		size_t colsCount() const;
 		Matrix<T> submatrix(size_t n_from, size_t n_to, size_t m_from, size_t m_yo) const;
 
+		Matrix<T>& concatRowsRight(const Matrix<T>& rightMatrix);
+		Matrix<T>& concatRowsLeft(const Matrix<T>& leftMatrix);
+		Matrix<T>& concatColsDown(const Matrix<T>& downMatrix);
+		Matrix<T>& concatColsUp(const Matrix<T>& upperMatrix);
+
+		friend Matrix<T> concatRows(const Matrix<T>& leftMatrix, const Matrix<T>& rightMatrix);
+		friend Matrix<T> concatCols(const Matrix<T>& upperMatrix, const Matrix<T>& downMatrix);
+
 		Matrix<T>& setVal(const T& val);
 		Matrix<T>& transpose();
 		Matrix<T>& swap_rows(size_t i1, size_t i2);
 		Matrix<T>& swap_cols(size_t j1, size_t j2);
 		Matrix<T>& to_zero();
+
+		//Will be implemented in future;
+		/*Matrix<T>& removeRows(size_t from, size_t to = from + 1);
+		Matrix<T>& removeCols(size_t from, size_t to = from + 1);*/
+
 		Matrix<T>& setRow(size_t i, const T* row_);
 		Matrix<T>& setColumn(size_t i, const T* column_);
 		Matrix<T>& setEps(const T& val);
+#if SUPPORT_ERASE
+		Matrix<T>& setKoefForResize(const T& val);
+#endif
 		
 		Matrix<T>& to_upper_triangle();
 		Matrix<T>& to_lower_triangle();
@@ -160,6 +201,9 @@ namespace DS {
 
 		template <class T>
 		friend Matrix<T> inverse(const Matrix<T>& matrix);
+
+		template <class T>
+		friend Matrix<T> solveSystem_GaussMethod(Matrix<T> matrix, const Matrix<T>& freeColumn);
 
 		template <class T>
 		friend Matrix<T> transpose(const Matrix<T>& matrix);
@@ -183,6 +227,7 @@ namespace DS {
 		explicit operator T*() const;
 #ifdef _VECTOR_
 		explicit operator std::vector<T>() const;
+		explicit operator std::vector<std::vector<T>>() const;
 #endif	// _VECTOR_
 
 		Matrix<T>& operator=(const Matrix& matrix);
@@ -261,68 +306,37 @@ namespace DS {
 	};
 
 	template<class T>
-	inline Matrix<T>::Matrix() : rows(0), cols(0), eps(DEFAULT_EPS)
+	inline Matrix<T>::Matrix() : rows(0)
+							   , cols(0)
+							   , eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+							   , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
 	{
 		data = 0;
 	}
 
 	template<class T>
-	inline Matrix<T>::Matrix(size_t n, size_t m) : rows(n), cols(m), eps(DEFAULT_EPS)
+	inline Matrix<T>::Matrix(size_t n, size_t m) : rows(n)
+												 , cols(m)
+												 , eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+												 , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
 	{
-		data = create_array(n, m);
+		data = create_array_by_size(n, m);
 	}
 
 	template<class T>
-	inline Matrix<T>::Matrix(size_t n) : rows(n), cols(n), eps(DEFAULT_EPS)
+	inline Matrix<T>::Matrix(size_t n) : rows(n)
+									   , cols(n)
+									   , eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+									   , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
 	{
-		data = create_array(n, n);
+		data = create_array_by_size(n, n);
 	}
-
-	template<class T>
-	inline Matrix<T>::Matrix(size_t n, size_t m, const T& val) : rows(n), cols(m), eps(DEFAULT_EPS)
-	{
-		data = create_array(n, m, val);
-	}
-
-	template<class T>
-	inline Matrix<T>::Matrix(const T ** matrix, size_t n, size_t m) : rows(n), cols(m), eps(DEFAULT_EPS)
-	{
-		data = create_array(n, m, matrix);
-	}
-
-	template<class T>
-	inline Matrix<T>::Matrix(const T * matrix, size_t n, ROW_COL row_col = ROW_COL::COLUMN) : rows(n), cols(1), eps(DEFAULT_EPS)
-	{
-		data = create_array(n, matrix, row_col);
-	}
-
-#ifdef _VECTOR_
-
-	template<class T>
-	Matrix<T>::Matrix(const std::vector<T>& vector_, ROW_COL row_col = ROW_COL::COLUMN) : eps(DEFAULT_EPS)
-	{
-		if (row_col == ROW_COL::COLUMN) {
-			rows = vector_.size();
-			cols = 1;
-			data = create_array(rows, cols);
-
-			for (size_t i = 0; i < rows; ++i) {
-				data[i][0] = vector_[i];
-			}
-		}
-		else {
-			rows = 1;
-			cols = vector_.size();
-			data = create_array(rows, cols);
-
-			T * data_0 = data[0] - 1;
-			for (size_t i = 0; i < rows; ++i) {
-				*(++data_0) = vector_[i];
-			}
-		}
-	}
-
-#endif //#ifdef _VECTOR_
 
 	template<class T>
 	Matrix<T>::Matrix(const Matrix & matrix)
@@ -330,7 +344,40 @@ namespace DS {
 		rows = matrix.rows;
 		cols = matrix.cols;
 		eps = matrix.eps;
+#if SUPPORT_ERASE
+		areaKoefForResize = matrix.areaKoefForResize;
+#endif
 		data = matrix.copyData();
+	}
+
+	template<class T>
+	Matrix<T>::Matrix(const typename Matrix<T>::MatrixData & matrix_) : 
+														      eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+															, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
+	{
+		rows = matrix_.rows;
+		cols = matrix_.cols;
+		data = matrix_.data;
+	}
+
+	template<class T>
+	Matrix<T>::Matrix(const std::vector<T>& vector_) : eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+													, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
+	{
+		*this = matrixByStdVector(vector_);
+	}
+
+	template<class T>
+	Matrix<T>::Matrix(const std::vector<std::vector<T>>& vector_) : eps(DEFAULT_EPS)
+#if SUPPORT_ERASE
+													, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
+#endif
+	{
+		*this = matrixByStdVectorVector(vector_);
 	}
 
 	template<class T>
@@ -340,10 +387,110 @@ namespace DS {
 	}
 
 	template<class T>
-	inline Matrix<T>& Matrix<T>::operator=(const Matrix & matrix)
+	typename Matrix<T>::MatrixData Matrix<T>::matrixWithValue(size_t n, size_t m, const T& val) {
+		MatrixData matrix_;
+
+		matrix_.rows = n;
+		matrix_.cols = m;
+		matrix_.data = create_array_with_val(n, m, val);
+
+		return matrix_;
+	}
+
+	template<class T>
+    typename Matrix<T>::MatrixData Matrix<T>::vectorWithValue(size_t n, const T& val) {
+		Matrix<T>::MatrixData matrix_;
+
+		matrix_.rows = n;
+		matrix_.cols = 1;
+		matrix_.data = create_array_with_val(n, 1, val);
+
+		return matrix_;
+	}
+
+	template<class T>
+	typename Matrix<T>::MatrixData Matrix<T>::matrixByArray(const T* const * matrix, size_t n, size_t m) {
+		Matrix<T>::MatrixData matrix_;
+
+		matrix_.rows = n;
+		matrix_.cols = m;
+		matrix_.data = create_array_by_two_dim_array(n, m, matrix);
+
+		return matrix_;
+	}
+
+	template<class T>
+	typename Matrix<T>::MatrixData Matrix<T>::vectorByArray(const T* matrix, size_t n, ROW_COL row_col = ROW_COL::COLUMN) {
+		Matrix<T>::MatrixData matrix_;
+
+		matrix_.rows = n;
+		matrix_.cols = 1;
+		matrix_.data = create_array_by_array(n, matrix, row_col);
+
+		return matrix_;
+	}
+
+#ifdef _VECTOR_
+	template<class T>
+	typename Matrix<T>::MatrixData Matrix<T>::matrixByStdVector(const std::vector<T>& vector_, ROW_COL row_col = ROW_COL::COLUMN) {
+		Matrix<T>::MatrixData matrix_;
+
+		if (row_col == ROW_COL::COLUMN) {
+			matrix_.rows = vector_.size();
+			matrix_.cols = 1;
+			matrix_.data = create_array_by_size(matrix_.rows, matrix_.cols);
+
+			for (size_t i = 0; i < matrix_.rows; ++i) {
+				matrix_.data[i][0] = vector_[i];
+			}
+		}
+		else {
+			matrix_.rows = 1;
+			matrix_.cols = vector_.size();
+			matrix_.data = create_array_by_size(matrix_.rows, matrix_.cols);
+
+			T * data_0 = matrix_.data[0] - 1;
+			for (size_t i = 0; i < matrix_.rows; ++i) {
+				*(++data_0) = vector_[i];
+			}
+		}
+
+		return matrix_;
+	}
+
+	template<class T>
+	typename Matrix<T>::MatrixData Matrix<T>::matrixByStdVectorVector(const std::vector<std::vector<T>>& vector_) {
+		Matrix<T>::MatrixData matrix_;
+
+		matrix_.rows = vector_.size();
+		matrix_.cols = vector_[0].size();
+		matrix_.data = create_array_by_size(matrix_.rows)
+
+		for (size_t i = 0; i < )
+	}
+#endif // _VECTOR_
+
+	template <class T>
+	template <size_t n, size_t m>
+	typename Matrix<T>::MatrixData Matrix<T>::matrixByArray(const T(&matrix)[n][m]) {
+		Matrix<T>::MatrixData matrix_;
+
+		matrix_.rows = n;
+		matrix_.cols = m;
+		matrix_.data = create_array_by_two_dim_array(matrix);
+
+		return matrix_;
+	}
+
+	template<class T>
+	inline Matrix<T>& Matrix<T>::operator=(const Matrix<T> & matrix)
 	{
 		rows = matrix.rows;
 		cols = matrix.cols;
+		eps = matrix.eps;
+#if SUPPORT_ERASE
+		areaKoefForResize = matrix.areaKoefForResize;
+#endif
 		data = matrix.copyData();
 
 		return *this;
@@ -845,7 +992,7 @@ namespace DS {
 	}
 
 	template<class T>
-	T ** Matrix<T>::create_array(size_t n, size_t m) {
+	T ** Matrix<T>::create_array_by_size(size_t n, size_t m) {
 		T ** array_ = new T*[n];
 
 		for (size_t i = 0; i < n; ++i) {
@@ -856,7 +1003,7 @@ namespace DS {
 	}
 
 	template<class T>
-	T ** Matrix<T>::create_array(size_t n, size_t m, const T& val) {
+	T ** Matrix<T>::create_array_with_val(size_t n, size_t m, const T& val) {
 		T ** array_ = new T*[n];
 
 		for (size_t i = 0; i < n; ++i) {
@@ -871,8 +1018,25 @@ namespace DS {
 	}
 
 	template<class T>
-	T ** Matrix<T>::create_array(size_t n, size_t m, const T ** matrix)
+	T ** Matrix<T>::create_array_by_two_dim_array(size_t n, size_t m, const T * const * matrix)
 	{
+		T ** array_ = new T*[n];
+
+		for (size_t i = 0; i < n; ++i) {
+			array_[i] = new T[m];
+			T* ptr = array_[i] - 1;
+
+			for (size_t j = 0; j < m; ++j) {
+				*(++ptr) = matrix[i][j];
+			}
+		}
+
+		return array_;
+	}
+
+	template <class T>
+	template <size_t n, size_t m>
+	T ** Matrix<T>::create_array_by_two_dim_array(const T(&matrix)[n][m]) {
 		T ** array_ = new T*[n];
 
 		for (size_t i = 0; i < n; ++i) {
@@ -887,7 +1051,7 @@ namespace DS {
 	}
 
 	template<class T>
-	T ** Matrix<T>::create_array(size_t n, const T * array_in, ROW_COL row_col = ROW_COL::COLUMN)
+	T ** Matrix<T>::create_array_by_array(size_t n, const T * array_in, ROW_COL row_col = ROW_COL::COLUMN)
 	{
 		if (row_col == ROW_COL::COLUMN) {
 			T ** array_ = new T*[n];
@@ -901,10 +1065,11 @@ namespace DS {
 		}
 		if (row_col == ROW_COL::ROW) {
 			T ** array_ = new T*[1];
-			array_[0] = new T[n];
+			*array_ = new T[n];
+			T* ptr = *array_ - 1;
 
 			for (size_t i = 0; i < n; ++i) {
-				array_[0][i] = array_in[i];
+				*(++ptr) = array_in[i];
 			}
 
 			return array_;
@@ -912,13 +1077,59 @@ namespace DS {
 		return 0;
 	}
 
+#ifdef _VECTOR_
+	template<class T>
+	T ** Matrix<T>::create_array_by_std_vector_vector(size_t n, size_t m, const std::vector<std::vector<T>>& matrix) {
+		size_t n = matrix.size();
+		size_t m = matrix[0].size();
+
+		T ** array_ = new T*[n];
+
+		for (size_t i = 0; i < n; ++i) {
+			array_[i] = new T[m];
+
+			for (size_t j = 0; j < m; ++j) {
+				array_[i][j] = matrix[i][j];
+			}
+		}
+
+		return array_;
+	}
+
+	template<class T>
+	T ** Matrix<T>::create_array_by_std_vector(size_t n, const std::vector<T>& vector_in, ROW_COL row_col = ROW_COL::COLUMN) {
+		if (row_col == ROW_COL::COLUMN) {
+			T ** array_ = new T*[n];
+
+			for (size_t i = 0; i < n; ++i) {
+				array_[i] = new T[1];
+				array_[i][0] = vector_in[i];
+			}
+
+			return array_;
+		}
+		if (row_col == ROW_COL::ROW) {
+			T ** array_ = new T*[1];
+			*array_ = new T[n];
+			T* ptr = *array_ - 1;
+
+			for (size_t i = 0; i < n; ++i) {
+				*(++ptr) = vector_in[i];
+			}
+
+			return array_;
+		}
+		return 0;
+	}
+#endif
+
 	template<class T>
 	void Matrix<T>::resize(size_t n, size_t m) {
 		destroy();
 
 		rows = n;
 		cols = m;
-		data = create_array(n, m);
+		data = create_array_by_size(n, m);
 	}
 
 	template<class T>
@@ -927,19 +1138,19 @@ namespace DS {
 
 		rows = n;
 		cols = m;
-		data = create_array(n, m, val);
+		data = create_array_with_val(n, m, val);
 	}
 
 	template<class T>
 	inline Matrix<T> Matrix<T>::createZeroMatrix(size_t n, size_t m)
 	{
-		return Matrix<T>(n, m, ZERO);
+		return matrixWithValue(n, m, ZERO);
 	}
 
 	template<class T>
 	Matrix<T> Matrix<T>::createIdMatrix(size_t n)
 	{
-		Matrix<T> matrix(n, n, ZERO);
+		Matrix<T> matrix = matrixWithValue(n, n, ZERO);
 
 		for (size_t i = 0; i < n; ++i) {
 			matrix.data[i][i] = ONE;
@@ -969,12 +1180,16 @@ namespace DS {
 	template<class T>
 	Matrix<T>& Matrix<T>::setVal(const T & val)
 	{
+		T** ptr_ptr = data - 1;
 		for (size_t i = 0; i < rows; ++i) {
+			T* ptr = *(++ptr_ptr) - 1;
+
 			for (size_t j = 0; j < cols; ++j) {
-				data[i][j] = val;
+				*(++ptr) = val;
 			}
 		}
-		reurn *this;
+
+		return *this;
 	}
 
 	template<class T>
@@ -990,7 +1205,7 @@ namespace DS {
 			}
 		}
 		else {
-			T ** data_ = create_array(cols, rows);
+			T ** data_ = create_array_by_size(cols, rows);
 
 			for (size_t i = 0; i < rows; ++i) {
 				for (size_t j = 0; j < cols; ++j) {
@@ -1018,6 +1233,180 @@ namespace DS {
 				matrix.data[i1][j1] = data[i2][j2];
 			}
 		}
+		return matrix;
+	}
+
+	template<class T>
+	Matrix<T>& Matrix<T>::concatRowsRight(const Matrix<T>& rightMatrix) {
+		size_t newCols = cols + rightMatrix.cols;
+
+		T** ptr_row_this = data;
+		T** ptr_row_rightMatrix = rightMatrix.data;
+
+		for (size_t i = 0; i < rows; ++i, ++ptr_row, ++ptr_row_rightMatrix) {
+			T* newRow = new T[cols];
+
+			T* ptr_this = *ptr_row_this - 1;
+			T* ptr_rightMatrix = *ptr_row_rightMatrix - 1;
+			T* ptr_new_row = newRow - 1;
+
+			for (size_t j = 0; j < cols; ++j) {
+				*(++ptr_new_row) = *(++ptr_this);
+			}
+
+			for (size_t j = 0; j < rightMatrix.cols; ++j) {
+				*(++ptr_new_row) = *(++ptr_rightMatrix);
+			}
+
+			delete[] *ptr_row_this;
+			*ptr_row_this = newRow;
+		}
+
+		cols = newCols;
+
+		return *this;
+	}
+
+	template<class T>
+	Matrix<T>& Matrix<T>::concatRowsLeft(const Matrix<T>& leftMatrix) {
+		size_t newCols = cols + rightMatrix.cols;
+
+		T** ptr_row_this = data;
+		T** ptr_row_rightMatrix = rightMatrix.data;
+
+		for (size_t i = 0; i < rows; ++i, ++ptr_row, ++ptr_row_rightMatrix) {
+			T* newRow = new T[cols];
+
+			T* ptr_this = *ptr_row_this - 1;
+			T* ptr_rightMatrix = *ptr_row_rightMatrix - 1;
+			T* ptr_new_row = newRow - 1;
+
+			for (size_t j = 0; j < rightMatrix.cols; ++j) {
+				*(++ptr_new_row) = *(++ptr_rightMatrix);
+			}
+
+			for (size_t j = 0; j < cols; ++j) {
+				*(++ptr_new_row) = *(++ptr_this);
+			}
+
+			delete[] * ptr_row_this;
+			*ptr_row_this = newRow;
+		}
+
+		cols = newCols;
+
+		return *this;
+	}
+
+	template <class T>
+	Matrix<T>& Matrix<T>::concatColsDown(const Matrix<T>& downMatrix) {
+		T ** downMatrixData = downMatrix.copyData();
+
+		size_t newRows = rows + downMatrix.rows;
+
+		T ** newData = new T*[newRows];
+
+		T ** ptrRowThis = data - 1;
+		T ** ptrRowNew = newData - 1;
+		T ** ptrRowDownMatrix = downMatrix.data - 1;
+
+		for (size_t i = 0; i < rows; ++i) {
+			*(++ptrRowNew) = *(++ptrRowThis);
+			delete[] * ptrRowThis;
+		}
+
+		for (size_t i = rows; i < newRows; ++i) {
+			*(++ptrRowNew) = *(++ptrRowDownMatrix);
+		}
+
+		delete[] data;
+		delete[] downMatrixData;
+
+		data = newData;
+
+		return *this;
+	}
+
+	template <class T>
+	Matrix<T>& Matrix<T>::concatColsUp(const Matrix<T>& upperMatrix) {
+		T ** upperMatrixData = upperMatrix.copyData();
+
+		size_t newRows = rows + upperMatrix.rows;
+
+		T ** newData = new T*[newRows];
+
+		T ** ptrRowThis = data - 1;
+		T ** ptrRowNew = newData - 1;
+		T ** ptrRowUpperMatrix = upperMatrix.data - 1;
+
+		for (size_t i = rows; i < newRows; ++i) {
+			*(++ptrRowNew) = *(++ptrRowUpperMatrix);
+		}
+
+		for (size_t i = 0; i < rows; ++i) {
+			*(++ptrRowNew) = *(++ptrRowThis);
+			delete[] * ptrRowThis;
+		}
+
+		delete[] data;
+		delete[] upperMatrixData;
+
+		data = newData;
+
+		return *this;
+	}
+
+	template<class T>
+	Matrix<T> concatRows(const Matrix<T>& leftMatrix, const Matrix<T>& rightMatrix) {
+		Matrix<T> matrix(leftMatrix.rows, leftMatrix.cols + rightMatrix.cols);
+
+		T ** ptrData = matrix.data;
+		T ** ptrLeftMatrixData = leftMatrix.data;
+		T ** ptrRightMatrixData = rightMatrix.data;
+
+		for (size_t i = 0; i < matrix.rows; ++i, ++ptrData, ++ptrLeftMatrixData, ++ptrRightMatrixData) {
+			T * ptr = *ptrData - 1;
+			T * ptrLeftMatrix = *ptrLeftMatrixData - 1;
+			T * ptrRightMatrix = *ptrRightMatrixData - 1;
+
+			for (size_t j = 0; j < leftMatrix.cols; ++j) {
+				*(++ptr) = *(++ptrLeftMatrix);
+			}
+
+			for (size_t j = 0; j < rightMatrix.cols; ++j) {
+				*(++ptr) = *(++ptrRightMatrix);
+			}
+		}
+
+		return matrix;
+	}
+
+	template<class T>
+	Matrix<T> concatCols(const Matrix<T>& upperMatrix, const Matrix<T>& downMatrix) {
+		Matrix<T> matrix(leftMatrix.rows, leftMatrix.cols + rightMatrix.cols);
+
+		T ** ptrData = matrix.data;
+		T ** ptrUpperMatrixData = upperMatrix.data;
+		T ** ptrDownMatrixData = downMatrix.data;
+
+		for (size_t i = 0; i < upperMatrix.rows; ++i, ++ptrData, ++ptrUpperMatrixData) {
+			T * ptr = *ptrData - 1;
+			T * ptrUpperMatrix = *ptrUpperMatrixData - 1;
+
+			for (size_t j = 0; j < upperMatrix.cols; ++j) {
+				*(++ptr) = *(++ptrUpperMatrix);
+			}
+		}
+
+		for (size_t i = 0; i < downMatrix.rows; ++i, ++ptrData, ++ptrDownMatrixData) {
+			T * ptr = *ptrData - 1;
+			T * ptrDownMatrix = *ptrDownMatrixData - 1;
+
+			for (size_t j = 0; j < downMatrix.cols; ++j) {
+				*(++ptr) = *(++ptrDownMatrix);
+			}
+		}
+
 		return matrix;
 	}
 
@@ -1080,6 +1469,14 @@ namespace DS {
 		eps = val;
 		return *this;
 	}
+
+#if SUPPORT_ERASE
+	template<class T>
+	inline Matrix<T>& Matrix<T>::setKoefForResize(const T& val) {
+		setKoefForResize = val;
+		return *this;
+	}
+#endif
 
 	template<class T>
 	Matrix<T>& Matrix<T>::to_upper_triangle()
@@ -1306,6 +1703,25 @@ namespace DS {
 		}
 	}
 
+	template<class T>
+	Matrix<T>::operator std::vector<std::vector<T>>() const {
+		std::vector<std::vector<T>> matrix(rows);
+
+		T** ptr_ptr = data - 1;
+
+		for (size_t i = 0; i < rows; ++i) {
+			matrix[i].resize(cols);
+
+			T* ptr = *(++data) - 1;
+
+			for (size_t j = 0; j < cols; ++j) {
+				matrix[i][j] = *(++ptr);
+			}
+		}
+
+		return matrix;
+	}
+
 #endif // _VECTOR_
 
 	template<class T>
@@ -1328,6 +1744,68 @@ namespace DS {
 	{
 		Matrix<T> matr = matrix;
 		return matr.inverse();
+	}
+
+	template <class T>
+	Matrix<T> solveSystem_GaussMethod(Matrix<T> matrix, const Matrix<T>& freeColumn) {
+		Matrix<T> result = freeColumn;
+
+		size_t &rows = matrix.rows;
+		size_t &cols = matrix.cols;
+		T **& data = matrix.data;
+
+		for (size_t i = 0; i < rows - 1; ++i) {
+			if (data[i][i] == ZERO) {
+				bool not_exist = true;
+
+				for (size_t k = i; k < rows; ++k) {
+					if (data[k][i] != ZERO) {
+						matrix.swap_rows(i, k);
+						result.swap_rows(i, k);
+						not_exist = false;
+						break;
+					}
+				}
+
+				if (not_exist) {
+					return result;
+				}
+			}
+
+			T& data_ii = data[i][i];
+
+			for (size_t k = i + 1; k < rows; ++k) {
+				T data_ki = data[k][i];
+				T* data_i = &data[i][i] - 1;
+
+				for (size_t j = i; j < cols; ++j) {
+					data[k][j] -= data_ki * (*(++data_i)) / data_ii;
+				}
+
+				result.data[k][0] -= data_ki * result.data[i][0] / data_ii;
+			}
+		}
+
+		for (size_t i = rows - 1; i > 0; --i) {
+			T& data_ii = data[i][i];
+
+			for (size_t k = i - 1; k != SIZE_MAX; --k) {
+				T data_ki = data[k][i];
+				T* data_i = &data[i][i + 1];
+
+				for (size_t j = i; j != SIZE_MAX; --j) {
+					data[k][j] -= data_ki * (*(--data_i)) / data_ii;
+				}
+
+				result.data[k][0] -= data_ki * result.data[i][0] / data_ii;
+			}
+		}
+
+		for (size_t i = 0; i < rows; ++i) {
+			result.data[i][0] /= data[i][i];
+		}
+
+		return result;
 	}
 
 	template<class T>
@@ -1573,6 +2051,18 @@ namespace DS {
 	}
 
 	template<class T>
+	inline T & Matrix<T>::iterator::operator->()
+	{
+		return matrix->data[row][col];
+	}
+
+	template<class T>
+	inline const T & Matrix<T>::iterator::operator->() const
+	{
+		return matrix->data[row][col];
+	}
+
+	template<class T>
 	inline Matrix<T>::const_iterator::const_iterator() : row(0), col(0), matrix(0)
 	{
 	}
@@ -1742,6 +2232,12 @@ namespace DS {
 
 	template<class T>
 	inline const T & Matrix<T>::const_iterator::operator*() const
+	{
+		return matrix->data[row][col];
+	}
+
+	template<class T>
+	inline const T & Matrix<T>::const_iterator::operator->() const
 	{
 		return matrix->data[row][col];
 	}
