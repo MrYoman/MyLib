@@ -1773,6 +1773,8 @@ namespace DS {
 
 #else // _MSC_VER >= 1900
 
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+
 	template<class T>
 	inline T** Matrix<T>::cast_to_two_dim_array() const {
 		return copyData();
@@ -1834,6 +1836,8 @@ namespace DS {
 	}
 
 #endif // _VECTOR_
+
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
 
 #endif // _MSC_VER >= 1900
 
