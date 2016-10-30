@@ -277,7 +277,7 @@ namespace DS {
 
 #ifdef _DS_MATRIX_SUPPORT_STL_VECTOR
 		std::vector<T> cast_to_std_vector() const;
-		std::vector<T> cast_to_std_vector_vector() const;
+        std::vector< std::vector<T> > cast_to_std_vector_vector() const;
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
 
 #endif // _NOT_EXPLICIT_SUPPORT
@@ -1840,15 +1840,15 @@ namespace DS {
 	}
 
 	template<class T>
-	std::vector<T> Matrix<T>::cast_to_std_vector_vector() const {
-		std::vector<std::vector<T>> matrix(rows);
+    std::vector< std::vector<T> > Matrix<T>::cast_to_std_vector_vector() const {
+		std::vector< std::vector<T> > matrix(rows);
 
 		T** ptr_ptr = data - 1;
 
 		for (size_t i = 0; i < rows; ++i) {
 			matrix[i].resize(cols);
 
-			T* ptr = *(++data) - 1;
+            T* ptr = *(++ptr_ptr) - 1;
 
 			for (size_t j = 0; j < cols; ++j) {
 				matrix[i][j] = *(++ptr);
