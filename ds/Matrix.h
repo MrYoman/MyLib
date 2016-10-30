@@ -287,6 +287,13 @@ namespace DS {
 #endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
         Matrix<T>& operator=(const Matrix& matrix);
+        Matrix<T>& operator=(
+#if defined(QT_VERSION)
+							const Matrix<T>::MatrixData& matrixData
+#else
+							typename const Matrix<T>::MatrixData& matrixData
+#endif
+							);
         bool operator==(const Matrix<T>& matrix) const;
         bool operator!=(const Matrix<T>& matrix) const;
         T*& operator[](size_t i);
@@ -549,7 +556,7 @@ namespace DS {
     }
 
     template<class T>
-    inline Matrix<T>& Matrix<T>::operator=(const Matrix<T> & matrix)
+    Matrix<T>& Matrix<T>::operator=(const Matrix<T> & matrix)
     {
         rows = matrix.rows;
         cols = matrix.cols;
@@ -561,6 +568,24 @@ namespace DS {
 
         return *this;
     }
+
+	template<class T>
+    Matrix<T>& Matrix<T>::operator=(
+#if defined(QT_VERSION)
+									const Matrix<T>::MatrixData& matrixData
+#else
+									typename const Matrix<T>::MatrixData& matrixData
+#endif
+									) {
+
+		destroy();
+
+		rows = matrixData.rows;
+		cols = matrixData.cols;
+		data = matrixData.data;
+
+		return *this;
+	}
 
     template<class T>
     bool Matrix<T>::operator==(const Matrix<T>& matrix) const
