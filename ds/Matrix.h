@@ -13,7 +13,7 @@
 #ifndef _DS_MATRIX_
 #define _DS_MATRIX_
 #define _DS_MATRIX_VERSION "v.1.1.0 alpha"
-#define SUPPORT_ERASE 0
+#define _DS_MATRIX_SUPPORT_ERASE 0
 
 
 namespace DS {
@@ -22,7 +22,7 @@ namespace DS {
 #define ONE static_cast<T>(1)
 #define DEFAULT_EPS static_cast<T>(0.00001)
 
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 #define DEFAULT_AREA_KOEF_FOR_RESIZE 0.75
 #endif
 
@@ -39,7 +39,7 @@ namespace DS {
 		T ** data;
 
 	private:
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 		double areaKoefForResize;
 #endif
 		T eps;
@@ -83,10 +83,14 @@ namespace DS {
 #if _MSC_VER >= 1900
 			explicit operator T*();
 			explicit operator const T*() const;
-#else
-			operator T*();
-			operator const T*() const;
-#endif
+#else // _MSC_VER >= 1900
+
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+			T* cast_to_ptr();
+			const T* cast_to_ptr() const;
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
+
+#endif // _MSC_VER >= 1900
 
 			iterator& operator=(const iterator& iter);
 			bool operator==(const iterator& iter) const;
@@ -119,9 +123,14 @@ namespace DS {
 
 #if _MSC_VER >= 1900
 			explicit operator const T*() const;
-#else
-			operator const T*() const;
-#endif
+#else // _MSC_VER >= 1900
+
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+			const T* cast_to_ptr() const;
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
+
+#endif // _MSC_VER >= 1900
+
 			operator const iterator() const;
 
 			const_iterator& operator=(const const_iterator& iter);
@@ -144,16 +153,19 @@ namespace DS {
 		Matrix(size_t n);
 		Matrix(const Matrix& matrix);
 		Matrix(const MatrixData& matrixData);
+
 #ifdef _VECTOR_
 		explicit Matrix(const std::vector<T>& vector_);
 		explicit Matrix(const std::vector<std::vector<T>>& vector_);
 #endif // _VECTOR_
+
 		virtual ~Matrix();
 
 		static MatrixData matrixWithValue(size_t n, size_t m, const T& val);
 		static MatrixData vectorWithValue(size_t n, const T& val);
 		static MatrixData matrixByArray(const T* const * matrix, size_t n, size_t m);
 		static MatrixData vectorByArray(const T* matrix, size_t n, ROW_COL row_col = ROW_COL::COLUMN);
+
 #ifdef _VECTOR_
 		static MatrixData matrixByStdVector(const std::vector<T>& vector_, ROW_COL row_col = ROW_COL::COLUMN);
 		static MatrixData matrixByStdVectorVector(const std::vector<std::vector<T>>& vector_);
@@ -194,9 +206,10 @@ namespace DS {
 		Matrix<T>& setRow(size_t i, const T* row_);
 		Matrix<T>& setColumn(size_t i, const T* column_);
 		Matrix<T>& setEps(const T& val);
-#if SUPPORT_ERASE
+
+#if _DS_MATRIX_SUPPORT_ERASE
 		Matrix<T>& setKoefForResize(const T& val);
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 		
 		Matrix<T>& to_upper_triangle();
 		Matrix<T>& to_lower_triangle();
@@ -233,6 +246,7 @@ namespace DS {
 		T* column_array(size_t j) const;
 
 #if _MSC_VER >= 1900
+
 		explicit operator T**() const;
 		explicit operator T*() const;
 
@@ -241,17 +255,21 @@ namespace DS {
 		explicit operator std::vector<std::vector<T>>() const;
 #endif	// _VECTOR_
 
-#else
+#else  // _MSC_VER >= 1900
 
-		operator T**() const;
-		operator T*() const;
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+
+		T** cast_to_two_dim_array() const;
+		T* cast_to_one_dim_array() const;
 
 #ifdef _VECTOR_
-		operator std::vector<T>() const;
-		operator std::vector<std::vector<T>>() const;
-#endif	// _VECTOR_
+		std::vector<T> cast_to_std_vector() const;
+		std::vector<T> cast_to_std_vector_vector() const;
+#endif // _VECTOR_
 
-#endif
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
+
+#endif // _MSC_VER >= 1900
 
 		Matrix<T>& operator=(const Matrix& matrix);
 		bool operator==(const Matrix<T>& matrix) const;
@@ -332,9 +350,9 @@ namespace DS {
 	inline Matrix<T>::Matrix() : rows(0)
 							   , cols(0)
 							   , eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 							   , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		data = 0;
 	}
@@ -343,9 +361,9 @@ namespace DS {
 	inline Matrix<T>::Matrix(size_t n, size_t m) : rows(n)
 												 , cols(m)
 												 , eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 												 , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		data = create_array_by_size(n, m);
 	}
@@ -354,9 +372,9 @@ namespace DS {
 	inline Matrix<T>::Matrix(size_t n) : rows(n)
 									   , cols(n)
 									   , eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 									   , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		data = create_array_by_size(n, n);
 	}
@@ -367,18 +385,18 @@ namespace DS {
 		rows = matrix.rows;
 		cols = matrix.cols;
 		eps = matrix.eps;
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 		areaKoefForResize = matrix.areaKoefForResize;
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 		data = matrix.copyData();
 	}
 
 	template<class T>
 	Matrix<T>::Matrix(const typename Matrix<T>::MatrixData & matrix_) : 
 														      eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 															, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		rows = matrix_.rows;
 		cols = matrix_.cols;
@@ -389,23 +407,23 @@ namespace DS {
 
 	template<class T>
 	Matrix<T>::Matrix(const std::vector<T>& vector_) : eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 													, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		*this = matrixByStdVector(vector_);
 	}
 
 	template<class T>
 	Matrix<T>::Matrix(const std::vector<std::vector<T>>& vector_) : eps(DEFAULT_EPS)
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 													, areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 	{
 		*this = matrixByStdVectorVector(vector_);
 	}
 
-#endif
+#endif // _VECTOR_
 
 	template<class T>
 	Matrix<T>::~Matrix()
@@ -515,9 +533,9 @@ namespace DS {
 		rows = matrix.rows;
 		cols = matrix.cols;
 		eps = matrix.eps;
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 		areaKoefForResize = matrix.areaKoefForResize;
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 		data = matrix.copyData();
 
 		return *this;
@@ -1148,7 +1166,7 @@ namespace DS {
 		}
 		return 0;
 	}
-#endif
+#endif // _VECTOR_
 
 	template<class T>
 	void Matrix<T>::resize(size_t n, size_t m) {
@@ -1497,13 +1515,13 @@ namespace DS {
 		return *this;
 	}
 
-#if SUPPORT_ERASE
+#if _DS_MATRIX_SUPPORT_ERASE
 	template<class T>
 	inline Matrix<T>& Matrix<T>::setKoefForResize(const T& val) {
 		setKoefForResize = val;
 		return *this;
 	}
-#endif
+#endif // _DS_MATRIX_SUPPORT_ERASE
 
 	template<class T>
 	Matrix<T>& Matrix<T>::to_upper_triangle()
@@ -1753,7 +1771,71 @@ namespace DS {
 
 #endif // _VECTOR_
 
-#endif
+#else // _MSC_VER >= 1900
+
+	template<class T>
+	inline T** Matrix<T>::cast_to_two_dim_array() const {
+		return copyData();
+	}
+
+	template<class T>
+	T* Matrix<T>::cast_to_one_dim_array() const {
+		T * arr = new T[rows];
+
+		for (size_t i = 0; i < rows; ++i) {
+			arr[i] = data[i][0];
+		}
+
+		return arr;
+	}
+
+#ifdef _VECTOR_
+
+	template<class T>
+	std::vector<T> Matrix<T>::cast_to_std_vector() const {
+		if (rows == 1) {
+			std::vector<T> vect(rows);
+			T * data_0 = data[0] - 1;
+
+			for (size_t j = 0; j < cols; ++j) {
+				vect[j] = *(++data_0);
+			}
+
+			return vect;
+		}
+		else {
+			std::vector<T> vect(rows);
+
+			for (size_t i = 0; i < rows; ++i) {
+				vect[i] = data[i][0];
+			}
+
+			return vect;
+		}
+	}
+
+	template<class T>
+	std::vector<T> Matrix<T>::cast_to_std_vector_vector() const {
+		std::vector<std::vector<T>> matrix(rows);
+
+		T** ptr_ptr = data - 1;
+
+		for (size_t i = 0; i < rows; ++i) {
+			matrix[i].resize(cols);
+
+			T* ptr = *(++data) - 1;
+
+			for (size_t j = 0; j < cols; ++j) {
+				matrix[i][j] = *(++ptr);
+			}
+		}
+
+		return matrix;
+	}
+
+#endif // _VECTOR_
+
+#endif // _MSC_VER >= 1900
 
 	template<class T>
 	Matrix<T> to_upper_triangle(const Matrix<T>& matrix)
@@ -1936,6 +2018,8 @@ namespace DS {
 	{
 	}
 
+
+#if _MSC_VER >= 1900
 	template<class T>
 	inline Matrix<T>::iterator::operator T*()
 	{
@@ -1947,6 +2031,20 @@ namespace DS {
 	{
 		return &matrix->data[row][col];
 	}
+#else // _MSC_VER >= 1900
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+	template<class T>
+	inline T* Matrix<T>::iterator::cast_to_ptr() {
+		return &matrix[row][col];
+	}
+
+	template<class T>
+	inline const T* Matrix<T>::iterator::cast_to_ptr() const {
+		return &matrix[row][col];
+	}
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
+#endif // _MSC_VER >= 1900
+	
 
 	template<class T>
 	typename Matrix<T>::iterator & Matrix<T>::iterator::operator=(const iterator & iter)
@@ -2128,11 +2226,24 @@ namespace DS {
 		matrix = 0;
 	}
 
+#if _MSC_VER >= 1900
+
 	template<class T>
 	inline Matrix<T>::const_iterator::operator const T*() const
 	{
 		return &matrix->data[row][col];
 	}
+
+#else // _MSC_VER >= 1900
+
+#ifdef _DS_MATRIX_SUPPORT_PREV_VS
+	template<class T>
+	const T* Matrix<T>::const_iterator::cast_to_ptr() const {
+		return &matrix->data[row][col];
+	}
+#endif // _DS_MATRIX_SUPPORT_PREV_VS
+
+#endif // _MSC_VER >= 1900
 
 	template<class T>
 	inline Matrix<T>::const_iterator::operator typename const Matrix<T>::iterator() const
