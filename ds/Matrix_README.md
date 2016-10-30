@@ -10,10 +10,14 @@ If you do not work in Visual Studio 2015 there is possibility that explicit cast
 
 
 If you don't want to use satndart variable definitions in class like 
-<b>#define ZERO static_cast<T>(0)
+<b>
+<br>#define ZERO static_cast<T>(0)
 <br>#define ONE static_cast<T>(1)
-<br>#define DEFAULT_EPS static_cast<T>(0.00001)</b> 
+<br>#define DEFAULT_EPS static_cast<T>(0.00001)
+</b> 
 you can just <b>#define _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF</b> and then define your own 
-<b>#define ZERO
+<b>
+<br>#define ZERO
 <br>#define ONE
-<br>#define DEFAULT_EPS</b>
+<br>#define DEFAULT_EPS
+</b>
