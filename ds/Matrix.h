@@ -80,8 +80,13 @@ namespace DS {
 			iterator(Matrix * matr, size_t n, size_t m);
 			~iterator();
 
+#if _MSC_VER >= 1900
 			explicit operator T*();
 			explicit operator const T*() const;
+#else
+			operator T*();
+			operator const T*() const;
+#endif
 
 			iterator& operator=(const iterator& iter);
 			bool operator==(const iterator& iter) const;
@@ -112,7 +117,11 @@ namespace DS {
 			const_iterator(const Matrix * matr, size_t n, size_t m);
 			~const_iterator();
 
+#if _MSC_VER >= 1900
 			explicit operator const T*() const;
+#else
+			operator const T*() const;
+#endif
 			operator const iterator() const;
 
 			const_iterator& operator=(const const_iterator& iter);
@@ -223,12 +232,26 @@ namespace DS {
 		const T* crow_array(size_t i) const;
 		T* column_array(size_t j) const;
 
+#if _MSC_VER >= 1900
 		explicit operator T**() const;
 		explicit operator T*() const;
+
 #ifdef _VECTOR_
 		explicit operator std::vector<T>() const;
 		explicit operator std::vector<std::vector<T>>() const;
 #endif	// _VECTOR_
+
+#else
+
+		operator T**() const;
+		operator T*() const;
+
+#ifdef _VECTOR_
+		operator std::vector<T>() const;
+		operator std::vector<std::vector<T>>() const;
+#endif	// _VECTOR_
+
+#endif
 
 		Matrix<T>& operator=(const Matrix& matrix);
 		bool operator==(const Matrix<T>& matrix) const;
@@ -1663,6 +1686,8 @@ namespace DS {
 		return col_;
 	}
 
+#if _MSC_VER >= 1900
+
 	template<class T>
 	inline Matrix<T>::operator T**() const
 	{
@@ -1727,6 +1752,8 @@ namespace DS {
 	}
 
 #endif // _VECTOR_
+
+#endif
 
 	template<class T>
 	Matrix<T> to_upper_triangle(const Matrix<T>& matrix)
