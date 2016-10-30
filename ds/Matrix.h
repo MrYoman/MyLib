@@ -13,7 +13,7 @@
 #ifndef _DS_MATRIX_
 #define _DS_MATRIX_
 #define _DS_MATRIX_VERSION "v.1.1.0 alpha"
-#define SUPPORT_ERASE false
+#define SUPPORT_ERASE 0
 
 
 namespace DS {
@@ -362,6 +362,8 @@ namespace DS {
 		data = matrix_.data;
 	}
 
+#ifdef _VECTOR_
+
 	template<class T>
 	Matrix<T>::Matrix(const std::vector<T>& vector_) : eps(DEFAULT_EPS)
 #if SUPPORT_ERASE
@@ -379,6 +381,8 @@ namespace DS {
 	{
 		*this = matrixByStdVectorVector(vector_);
 	}
+
+#endif
 
 	template<class T>
 	Matrix<T>::~Matrix()
