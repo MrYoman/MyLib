@@ -19,8 +19,6 @@
 
 #define _DS_MATRIX_SUPPORT_ERASE 0
 
-//#define _EXPLICIT_SUPPORT !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-//#define _NOT_EXPLICIT_SUPPORT defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
 
 #ifdef _DS_MATRIX_SUPPORT_STL_VECTOR
 #include <vector>
@@ -28,9 +26,13 @@
 
 namespace DS {
 
+#ifndef _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF
+
 #define ZERO static_cast<T>(0)
 #define ONE static_cast<T>(1)
 #define DEFAULT_EPS static_cast<T>(0.00001)
+
+#endif // #ifndef _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF
 
 #if _DS_MATRIX_SUPPORT_ERASE
 #define DEFAULT_AREA_KOEF_FOR_RESIZE 0.75
@@ -2460,5 +2462,13 @@ namespace DS {
 };
 
 #undef _DS_MATRIX_SUPPORT_ERASE
+
+#ifndef _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF
+
+#undef ZERO
+#undef ONE
+#undef DEFAULT_EPS
+
+#endif // #ifndef _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF
 
 #endif // !_DS_MATRIX_
