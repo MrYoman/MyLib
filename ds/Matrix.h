@@ -95,14 +95,10 @@ namespace DS {
 #if !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
             explicit operator T*();
             explicit operator const T*() const;
-#else // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
+#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
             T* cast_to_ptr();
             const T* cast_to_ptr() const;
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-
-#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
             iterator& operator=(const iterator& iter);
             bool operator==(const iterator& iter) const;
@@ -135,13 +131,9 @@ namespace DS {
 
 #if !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
             explicit operator const T*() const;
-#else // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-            const T* cast_to_ptr() const;
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-
 #endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
+
+            const T* cast_to_ptr() const;
 
 #if defined(_MSC_VER) || defined(QT_VERSION)
             operator const iterator() const;
@@ -161,6 +153,7 @@ namespace DS {
             const T& operator*() const;
             const T& operator->() const;
         };
+
 
         Matrix();
         Matrix(size_t n, size_t m);
@@ -272,9 +265,7 @@ namespace DS {
         explicit operator std::vector< std::vector<T> >() const;
 #endif	// _DS_MATRIX_SUPPORT_STL_VECTOR
 
-#else  // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
+#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
         T** cast_to_two_dim_array() const;
         T* cast_to_one_dim_array() const;
@@ -283,10 +274,6 @@ namespace DS {
         std::vector<T> cast_to_std_vector() const;
         std::vector< std::vector<T> > cast_to_std_vector_vector() const;
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
-
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-
-#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
         Matrix<T>& operator=(const Matrix& matrix);
         Matrix<T>& operator=(
@@ -435,6 +422,7 @@ namespace DS {
                                                     , areaKoefForResize(DEFAULT_AREA_KOEF_FOR_RESIZE)
 #endif // _DS_MATRIX_SUPPORT_ERASE
     {
+        data = 0;
         *this = matrixByStdVector(vector_);
     }
 
@@ -1079,11 +1067,14 @@ namespace DS {
 
     template<class T>
     void Matrix<T>::destroy() {
-        for (size_t i = 0; i < rows; ++i) {
-            delete[] data[i];
-        }
+        if (data != 0) {
 
-        delete[] data;
+            for (size_t i = 0; i < rows; ++i) {
+                delete[] data[i];
+            }
+
+            delete[] data;
+        }
     }
 
     template<class T>
@@ -1823,9 +1814,7 @@ namespace DS {
 
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
 
-#else // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
+#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
     template<class T>
     inline T** Matrix<T>::cast_to_two_dim_array() const {
@@ -1862,7 +1851,10 @@ namespace DS {
 
             for (size_t i = 0; i < rows; ++i) {
                 vect[i] = data[i][0];
+//#include <QDebug>
+//            qDebug() << "Vector[i]: " << (double)vect[i] << " ";
             }
+
 
             return vect;
         }
@@ -1888,10 +1880,6 @@ namespace DS {
     }
 
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
-
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-
-#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
     template<class T>
     Matrix<T> to_upper_triangle(const Matrix<T>& matrix)
@@ -2089,9 +2077,7 @@ namespace DS {
         return &matrix->data[row][col];
     }
 
-#else // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
+#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
     template<class T>
     inline T* Matrix<T>::iterator::cast_to_ptr() {
@@ -2102,10 +2088,6 @@ namespace DS {
     inline const T* Matrix<T>::iterator::cast_to_ptr() const {
         return &matrix[row][col];
     }
-
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
 
     template<class T>
     typename Matrix<T>::iterator & Matrix<T>::iterator::operator=(const iterator & iter)
@@ -2295,18 +2277,12 @@ namespace DS {
         return &matrix->data[row][col];
     }
 
-#else // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
-
-#if defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
+#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
     template<class T>
     const T* Matrix<T>::const_iterator::cast_to_ptr() const {
         return &matrix->data[row][col];
     }
-
-#endif // defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) || defined(_DS_MATRIX_SUPPORT_PREV_VS)
-
-#endif // !defined(_DS_MATRIX_NOT_SUPPORT_EXPLICIT_CAST) && (!defined(_MSC_VER) || (_MSC_VER >= 1900))
 
 #if defined(_MSC_VER)
 
