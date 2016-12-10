@@ -162,8 +162,12 @@ namespace DS {
         Matrix();
         Matrix(size_t n, size_t m);
         Matrix(size_t n);
-        Matrix(const Matrix& matrix);
+        Matrix(const Matrix<T>& matrix);
+        Matrix(Matrix<T>&& matrix);
         Matrix(const MatrixData& matrixData);
+
+        template <class S>
+        friend void swap(Matrix<S>& matrix1, Matrix<S>& matrix2);
 
 #ifdef _DS_MATRIX_SUPPORT_STL_VECTOR
         explicit Matrix(const std::vector<T>& vector_);
@@ -279,7 +283,8 @@ namespace DS {
         std::vector< std::vector<T> > cast_to_std_vector_vector() const;
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
 
-        Matrix<T>& operator=(const Matrix& matrix);
+        Matrix<T>& operator=(const Matrix<T>& matrix);
+        Matrix<T>& operator=(Matrix<T>&& matrix);
         Matrix<T>& operator=(
 #if defined(__GNUC__)
 							const Matrix<T>::MatrixData& matrixData
@@ -395,7 +400,7 @@ namespace DS {
     }
 
     template<class T>
-    Matrix<T>::Matrix(const Matrix & matrix)
+    Matrix<T>::Matrix(const Matrix<T> & matrix)
     {
         rows = matrix.rows;
         cols = matrix.cols;
@@ -404,6 +409,12 @@ namespace DS {
         areaKoefForResize = matrix.areaKoefForResize;
 #endif // _DS_MATRIX_SUPPORT_ERASE
         data = matrix.copyData();
+    }
+
+    template<class T>
+    Matrix<T>::Matrix(Matrix<T>&& matrix) : data(0)
+    {
+        swap(*this, matrix);
     }
 
     template<class T>
@@ -445,6 +456,31 @@ namespace DS {
     Matrix<T>::~Matrix()
     {
         destroy();
+    }
+
+    template <class S>
+    void swap(Matrix<S>& matrix1, Matrix<S>& matrix2)
+    {
+        size_t t = matrix1.rows;
+        matrix1.rows = matrix2.rows;
+        matrix2.rows = t;
+
+        t = matrix1.cols;
+        matrix1.cols = matrix2.cols;
+        matrix2.cols = t;
+
+        S ** _data = matrix1.data;
+        matrix1.data = matrix2.data;
+        matrix2.data = _data;
+
+#if _DS_MATRIX_SUPPORT_ERASE
+        double _areaKoefForResize = matrix1.areaKoefForResize;
+        matrix1.areaKoefForResize = matrix2.areaKoefForResize;
+        matrix2.areaKoefForResize = _areaKoefForResize;
+#endif
+        S _eps = matrix1.eps;
+        matrix1.eps = matrix2.eps;
+        matrix2.eps = _eps;
     }
 
     template<class T>
@@ -559,6 +595,14 @@ namespace DS {
         areaKoefForResize = matrix.areaKoefForResize;
 #endif // _DS_MATRIX_SUPPORT_ERASE
         data = matrix.copyData();
+
+        return *this;
+    }
+
+    template<class T>
+    Matrix<T>& Matrix<T>::operator=(Matrix<T>&& matrix)
+    {
+        swap(*this, matrix);
 
         return *this;
     }
