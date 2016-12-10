@@ -17,6 +17,10 @@
 #define _DS_MATRIX_
 #define _DS_MATRIX_VERSION "v.1.1.0 alpha"
 
+#if !defined(_MSC_VER) && !defined(__GNUC__)
+#error You need to compile with MSVC or GNU compiler
+#endif  // !defined(_MSC_VER) && !defined(__GNUC__)
+
 #define _DS_MATRIX_SUPPORT_ERASE 0
 
 
@@ -135,7 +139,7 @@ namespace DS {
 
             const T* cast_to_ptr() const;
 
-#if defined(_MSC_VER) || defined(QT_VERSION)
+#if defined(_MSC_VER) || defined(__GNUC__)
             operator const iterator() const;
 #endif // _MSC_VER
 
@@ -277,7 +281,7 @@ namespace DS {
 
         Matrix<T>& operator=(const Matrix& matrix);
         Matrix<T>& operator=(
-#if defined(QT_VERSION)
+#if defined(__GNUC__)
 							const Matrix<T>::MatrixData& matrixData
 #else
 							typename const Matrix<T>::MatrixData& matrixData
@@ -561,7 +565,7 @@ namespace DS {
 
 	template<class T>
     Matrix<T>& Matrix<T>::operator=(
-#if defined(QT_VERSION)
+#if defined(__GNUC__)
 									const Matrix<T>::MatrixData& matrixData
 #else
 									typename const Matrix<T>::MatrixData& matrixData
@@ -2292,7 +2296,7 @@ namespace DS {
         return Matrix<T>::iterator(reinterpret_cast<Matrix<T> *>(matrix), row, col);
     }
 
-#elif defined(QT_VERSION)
+#elif defined(__GNUC__)
 
     template<class T>
     inline Matrix<T>::const_iterator::operator const Matrix<T>::iterator() const
