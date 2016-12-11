@@ -5,6 +5,8 @@
 
 #include "../def/defgeneral.h"
 
+typedef SIZE_T size_t;
+
 typedef UINT uint;
 typedef UINT8 uint8;
 typedef UINT16 uint16;

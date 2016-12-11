@@ -21,6 +21,8 @@
 #error You need to compile with MSVC or GNU compiler
 #endif  // !defined(_MSC_VER) && !defined(__GNUC__)
 
+#include "../typedefs/typedefgeneral.h"
+
 #define _DS_MATRIX_SUPPORT_ERASE 0
 
 
@@ -28,7 +30,7 @@
 #include <vector>
 #endif
 
-namespace DS {
+namespace ds {
 
 #ifndef _DS_MATRIX_NOT_USE_STANDART_VALUES_DEF
 
