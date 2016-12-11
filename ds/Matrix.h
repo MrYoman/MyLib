@@ -165,7 +165,9 @@ namespace ds {
         Matrix(size_t n, size_t m);
         Matrix(size_t n);
         Matrix(const Matrix<T>& matrix);
+#if _MSC_VER >= 1700
         Matrix(Matrix<T>&& matrix);
+#endif  // #if _MSC_VER >= 1700
         Matrix(const MatrixData& matrixData);
 
         template <class S>
@@ -286,7 +288,9 @@ namespace ds {
 #endif // _DS_MATRIX_SUPPORT_STL_VECTOR
 
         Matrix<T>& operator=(const Matrix<T>& matrix);
+#if _MSC_VER >= 1700
         Matrix<T>& operator=(Matrix<T>&& matrix);
+#endif  // _MSC_VER >= 1700
         Matrix<T>& operator=(
 #if defined(__GNUC__)
 							const Matrix<T>::MatrixData& matrixData
@@ -413,11 +417,13 @@ namespace ds {
         data = matrix.copyData();
     }
 
+#if _MSC_VER >= 1700
     template<class T>
     Matrix<T>::Matrix(Matrix<T>&& matrix) : data(0)
     {
         swap(*this, matrix);
     }
+#endif  // _MSC_VER >= 1700
 
     template<class T>
     Matrix<T>::Matrix(const typename Matrix<T>::MatrixData & matrix_) :
@@ -601,6 +607,7 @@ namespace ds {
         return *this;
     }
 
+#if _MSC_VER >= 1700
     template<class T>
     Matrix<T>& Matrix<T>::operator=(Matrix<T>&& matrix)
     {
@@ -608,6 +615,7 @@ namespace ds {
 
         return *this;
     }
+#endif  // _MSC_VER >= 1700
 
 	template<class T>
     Matrix<T>& Matrix<T>::operator=(
