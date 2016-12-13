@@ -1008,6 +1008,8 @@ namespace ds {
         }
 
         delete[] row_;
+        
+        cols = matrix.cols;
 
         return *this;
     }
