@@ -95,7 +95,7 @@
 #endif  // __GNUC__
 
 #ifdef _MSC_VER
-#define UINT8 signed __int8
+#define INT8 signed __int8
 #endif  // _MSC_VER
 
 #endif  // !defined(INT8)
