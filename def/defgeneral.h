@@ -1,3 +1,10 @@
+/*
+ * @Author: Igor Tymchyshyn
+ *			Taras Shevchenko National University of Kyiv
+ *          Kyiv, Ukraine
+ */
+
+
 #pragma once
 
 #ifndef DEFGENERAL_H
@@ -225,6 +232,88 @@
 #endif  // sign_size_t
 
 #endif  // MODE_x86
+
+
+#ifndef UINT8_CAST
+#define UINT8_CAST(x) static_cast<UINT8>(x)
+#endif  // UINT8_CAST
+
+#ifndef INT8_CAST
+#define INT8_CAST(x) static_cast<INT8>(x)
+#endif  // INT8_CAST
+
+#ifndef UINT16_CAST
+#define UINT16_CAST(x) static_cast<UINT16>(x)
+#endif  // UINT16_CAST
+
+#ifndef INT16_CAST
+#define INT16_CAST(x) static_cast<INT16>(x)
+#endif  // INT16_CAST
+
+#ifndef UINT32_CAST
+#define UINT32_CAST(x) static_cast<UINT32>(x)
+#endif  // UINT32_CAST
+
+#ifndef INT32_CAST
+#define INT32_CAST(x) static_cast<INT32>(x)
+#endif  // INT32_CAST
+
+#ifndef UINT64_CAST
+#define UINT64_CAST(x) static_cast<UINT64>(x)
+#endif  // UINT64_CAST
+
+#ifndef INT64_CAST
+#define INT64_CAST(x) static_cast<INT64>(x)
+#endif  // INT64_CAST
+
+
+#ifndef UINT8_MAX
+#define UINT8_MAX UINT8_CAST(255)
+#endif  // UINT8_MAX
+
+#ifndef INT8_MAX
+#define INT8_MAX INT8_CAST(127)
+#endif  // INT8_MAX
+
+#ifndef INT8_MIN
+#define INT8_MIN INT8_CAST(-128)
+#endif  // INT8_MIN
+
+#ifndef UINT16_MAX
+#define UINT16_MAX UINT16_CAST(65535)
+#endif  // UINT16_MAX
+
+#ifndef INT16_MAX
+#define INT16_MAX INT16_CAST(32767)
+#endif  // INT16_MAX
+
+#ifndef INT16_MIN
+#define INT16_MIN INT16_CAST(-32678)
+#endif  // INT16_MIN
+
+#ifndef UINT32_MAX
+#define UINT32_MAX UINT32_CAST(4294967295)
+#endif  // UINT32_MAX
+
+#ifndef INT32_MAX
+#define INT32_MAX INT32_CAST(2147483647)
+#endif  // INT32_MAX
+
+#ifndef INT32_MIN
+#define INT32_MIN INT32_CAST(-2147483648)
+#endif  // INT32_MIN
+
+#ifndef UINT64_MAX
+#define UINT64_MAX UINT64_CAST(18446744073709551615)
+#endif  // UINT64_MAX
+
+#ifndef INT64_MAX
+#define INT64_MAX INT64_CAST(9223372036854775807)
+#endif  // INT64_MAX
+
+#ifndef INT64_MIN
+#define INT64_MIN INT64_CAST(-9223372036854775808)
+#endif  // INT64_MIN
 
 
 #endif  // !DEFGENERAL_H

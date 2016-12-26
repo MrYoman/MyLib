@@ -2,20 +2,14 @@
  * @Author: Igor Tymchyshyn
  *			Taras Shevchenko National University of Kyiv
  *          Kyiv, Ukraine
- * @First_version: 10/23/2016
  */
-
-/*
- * Written in Visual Studio 2015
- */
-
 
 
 #pragma once
 
 #ifndef _DS_MATRIX_
 #define _DS_MATRIX_
-#define _DS_MATRIX_VERSION "v.1.1.0 alpha"
+
 
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 #error You need to compile with MSVC or GNU compiler
