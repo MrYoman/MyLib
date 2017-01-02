@@ -43,7 +43,7 @@ namespace ds
         void push(T&& val);
         T pop();
         T top() const;
-        T pop_min() const;
+        T pop_min();
         T min() const;
         size_t size() const;
         bool empty() const;
@@ -142,7 +142,7 @@ namespace ds
     }
 
     template <class T, size_t n>
-    inline T StackMinFixedN<T, n>::pop_min() const
+    inline T StackMinFixedN<T, n>::pop_min()
     {
         data.pop();
         return data_min.pop();

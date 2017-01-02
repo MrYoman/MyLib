@@ -45,7 +45,7 @@ namespace ds
         T pop();
         T front() const;
         T min() const;
-        T pop_min() const;
+        T pop_min();
         size_t size() const;
         bool empty() const;
         bool full() const;
@@ -177,7 +177,7 @@ namespace ds
     }
 
     template <class T, size_t n>
-    T QueueMinFixedN<T, n>::pop_min() const
+    T QueueMinFixedN<T, n>::pop_min()
     {
         T min_val_pushin_stack = stack_for_pushing.min();
         T min_val_poping_stack = stack_for_poping.min();

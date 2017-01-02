@@ -23,8 +23,6 @@
 /ds/IVector.h
 /ds/QueueFixedN.h
 /ds/VectorFixedN.h
-/ds/QueueMin.h
-/ds/StackMin.h
 algo
 memory
 queue
